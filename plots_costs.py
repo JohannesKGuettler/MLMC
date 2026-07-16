@@ -596,10 +596,12 @@ def estimate_rates(A, log_costs):
 
     Returns:
         A float the specifies the estimated convergence rate.
+        A float the specifies the estimated constant associated
+        with the complexity class.
     """
-    convergence_rate, _ = np.linalg.lstsq(A, log_costs)[0]
+    convergence_rate, constant = np.linalg.lstsq(A, log_costs)[0]
 
-    return convergence_rate
+    return convergence_rate, constant
 
 
 def plots_main():
@@ -867,23 +869,34 @@ def plots_main():
     # Actual costs
     convergence_rates_actual_df = pd.DataFrame(columns=columns,
                                                index=np.array(jump_rates))
+    convergence_constants_df = pd.DataFrame(columns=columns,
+                                               index=np.array(jump_rates))
     for i, jump_rate in enumerate(jump_rates):
         # Fixed Grid
-        convergence_rates_actual_df.loc[jump_rate, "Barrier Fixed Grid"] =\
+        convergence_rates_actual_df.loc[jump_rate, "Barrier Fixed Grid"],\
+            convergence_constants_df.loc[jump_rate, "Barrier Fixed Grid"]=\
             estimate_rates(A, np.log2(costs_barrier_fixed_grid[i, :]))
-        convergence_rates_actual_df.loc[jump_rate, "Asian Fixed Grid"] = \
+
+        convergence_rates_actual_df.loc[jump_rate, "Asian Fixed Grid"],\
+            convergence_constants_df.loc[jump_rate, "Asian Fixed Grid"]= \
             estimate_rates(A, np.log2(costs_asian_fixed_grid[i, :]))
 
         # Jump adapted
-        convergence_rates_actual_df.loc[jump_rate, "Barrier Jump Adapted"] = \
+        convergence_rates_actual_df.loc[jump_rate, "Barrier Jump Adapted"],\
+            convergence_constants_df.loc[jump_rate, "Barrier Jump Adapted"]= \
             estimate_rates(A, np.log2(costs_barrier_jump_adapted[i, :]))
-        convergence_rates_actual_df.loc[jump_rate, "Asian Jump Adapted"] = \
+
+        convergence_rates_actual_df.loc[jump_rate, "Asian Jump Adapted"],\
+            convergence_constants_df.loc[jump_rate, "Asian Jump Adapted"]= \
             estimate_rates(A, np.log2(costs_asian_jump_adapted[i, :]))
 
         # Cutoff
-        convergence_rates_actual_df.loc[jump_rate, "Barrier Cutoff"] = \
+        convergence_rates_actual_df.loc[jump_rate, "Barrier Cutoff"],\
+            convergence_constants_df.loc[jump_rate, "Barrier Cutoff"]= \
             estimate_rates(A, np.log2(costs_barrier_cutoff[i, :]))
-        convergence_rates_actual_df.loc[jump_rate, "Asian Cutoff"] = \
+
+        convergence_rates_actual_df.loc[jump_rate, "Asian Cutoff"],\
+            convergence_constants_df.loc[jump_rate, "Asian Cutoff"]= \
             estimate_rates(A, np.log2(costs_asian_cutoff[i, :]))
 
     # Idealized costs
@@ -941,6 +954,7 @@ def plots_main():
 
     convergence_rates_actual_df.to_feather("Rates_Estimates/convergence_rate_actual.feather")
     convergence_rates_ideal_df.to_feather("Rates_Estimates/convergence_rate_ideal.feather")
+    convergence_constants_df.to_feather("Rates_Estimates/convergence_constant_df.feather")
 
 
 if __name__ == "__main__":
